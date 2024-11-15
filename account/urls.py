@@ -6,5 +6,5 @@ app_name = "product"
 
 urlpatterns = [
     path("register/", Register.as_view(), name="register"),
-    # path('profile/', ProfileApi.as_view(),name="profile"),
+    path("profile/", Profile.as_view(), name="profile"),
 ]
