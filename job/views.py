@@ -1,4 +1,6 @@
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework as filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,7 +12,15 @@ from .permissions import IsEmployer
 from .serializers import *
 
 
+class JobFilter(filters.FilterSet):
+    class Meta:
+        model = Job
+        fields = ["title", "location", "salary", "job_type"]
+
+
 class JobList(APIView):
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = JobFilter
 
     def get_permissions(self):
         if self.request.method == "POST":
@@ -26,7 +36,11 @@ class JobList(APIView):
             else:
                 jobs = Job.objects.all()
 
-            serializer = JobSerializer(jobs, many=True)
+            # Apply filtering
+            filter_backend = DjangoFilterBackend()
+            filtered_jobs = filter_backend.filter_queryset(request, jobs, self)
+
+            serializer = JobSerializer(filtered_jobs, many=True)
             resul = result_message("OK", status.HTTP_200_OK, serializer.data)
             return Response(resul, status=status.HTTP_200_OK)
         except Exception as e:
