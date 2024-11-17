@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
@@ -7,15 +6,26 @@ from rest_framework.views import APIView
 from messages import result_message
 
 from .models import Job
+from .permissions import IsEmployer
 from .serializers import *
 
 
 class JobList(APIView):
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsEmployer()]
+        return super().get_permissions()
+
     def get(self, request):
         user_id = request.user.id
 
         try:
-            jobs = Job.objects.filter(employer_id=user_id)
+            if request.user.role == "Employer":
+                jobs = Job.objects.filter(employer_id=user_id)
+            else:
+                jobs = Job.objects.all()
+
             serializer = JobSerializer(jobs, many=True)
             resul = result_message("OK", status.HTTP_200_OK, serializer.data)
             return Response(resul, status=status.HTTP_200_OK)
@@ -48,10 +58,16 @@ class JobList(APIView):
 
 
 class JobDetail(APIView):
+    def get_permissions(self):
+        if self.request.method in ["PUT", "DELETE"]:
+            return [IsEmployer()]
+        return super().get_permissions()
+
     def get(self, request, job_id):
+        user_id = request.user.id
 
         try:
-            job = get_object_or_404(Job, id=job_id)
+            job = get_object_or_404(Job, employer=user_id, id=job_id)
             serializer = JobSerializer(job)
             result = result_message("OK", status.HTTP_200_OK, serializer.data)
             return Response(result, status=status.HTTP_200_OK)
