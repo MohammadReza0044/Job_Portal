@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -11,6 +12,8 @@ from .serializers import *
 
 
 class Register(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = InputRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -40,7 +43,7 @@ class Profile(APIView):
             result = result_message("OK", status.HTTP_200_OK, serializer.data)
             return Response(result, status=status.HTTP_200_OK)
         except Exception as e:
-            result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, f"{e}")
+            result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
@@ -59,5 +62,5 @@ class Profile(APIView):
                 )
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, f"{e}")
+            result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
