@@ -1,6 +1,6 @@
 from django.urls import path
 
-from job.views import *
+from jobb.views import *
 
 app_name = "job"
 
