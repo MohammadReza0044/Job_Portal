@@ -1,7 +1,7 @@
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from utils.jwt_decode import decode_jwt_token
+from .jwt_decode import decode_jwt_token
 
 
 class JWTAuthentication(BaseAuthentication):
