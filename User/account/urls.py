@@ -2,7 +2,7 @@ from django.urls import path
 
 from account.views import *
 
-app_name = "product"
+app_name = "account"
 
 urlpatterns = [
     path("register/", Register.as_view(), name="register"),
