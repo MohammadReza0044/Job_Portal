@@ -1,9 +1,11 @@
 from rest_framework import serializers
 
-from .models import Job
+from .models import *
 
 
 class JobSerializer(serializers.ModelSerializer):
+
+    employer_id = serializers.UUIDField()
 
     class Meta:
         model = Job
@@ -20,3 +22,17 @@ class JobUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = ("title", "location", "job_type", "salary", "description")
+
+
+class LocationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Location
+        fields = "__all__"
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = "__all__"
