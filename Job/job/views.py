@@ -11,10 +11,10 @@ from .serializers import *
 
 
 class JobList(APIView):
-    permission_clsases = [IsEmployer]
+    permission_classes = [IsEmployer]
 
     def get(self, request):
-        user_id = request.user["user_id"]
+        user_id = request.user.id
 
         try:
             jobs = Job.objects.filter(employer_id=user_id)
@@ -26,7 +26,7 @@ class JobList(APIView):
             return Response(resul, status=status.HTTP_400_BAD_REQUEST)
 
     def post(sell, request):
-        user_id = request.user["user_id"]
+        user_id = request.user.id
 
         try:
             job_data = request.data.copy()
