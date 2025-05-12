@@ -96,7 +96,7 @@ class JobDetail(APIView):
 
 
 class LocationList(APIView):
-    permission_clsases = [IsEmployer]
+    permission_classes = [IsEmployer]
 
     def get(self, request):
 
@@ -130,7 +130,7 @@ class LocationList(APIView):
 
 
 class CategoryList(APIView):
-    permission_clsases = [IsEmployer]
+    permission_classes = [IsEmployer]
 
     def get(self, request):
 
