@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -34,7 +35,7 @@ class OutPutRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ("email", "token", "created_at", "updated_at")
+        fields = ("email", "token", "role", "created_at", "updated_at")
 
     def get_token(self, user):
         data = dict()
@@ -42,10 +43,37 @@ class OutPutRegisterSerializer(serializers.ModelSerializer):
 
         refresh = token_class.for_user(user)
 
+        # Add custom claims to both tokens
+        refresh["role"] = user.role
+        refresh["email"] = user.email
+
+        # 👇 Access token must have them too
+        access = refresh.access_token
+        access["role"] = user.role
+        access["email"] = user.email
+
+        data["refresh"] = str(refresh)
+        data["access"] = str(access)
+
+        print("Generated JWT with claims:", access.payload)  # Debug: Check output
+
         data["refresh"] = str(refresh)
         data["access"] = str(refresh.access_token)
 
+        print(data)
+
         return data
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        token["role"] = user.role
+        token["email"] = user.email
+
+        return token
 
 
 class ProfileSerializer(serializers.ModelSerializer):

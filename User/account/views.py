@@ -5,10 +5,15 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from utils.messages import result_message
 
 from .serializers import *
+
+
+class CustomLoginView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 
 class Register(APIView):
@@ -34,7 +39,9 @@ class Register(APIView):
 
 
 class Profile(APIView):
+
     def get(self, request):
+
         user_id = request.user.id
         user = get_object_or_404(get_user_model(), id=user_id)
         serializer = ProfileSerializer(user)
