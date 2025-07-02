@@ -39,7 +39,9 @@ class Register(APIView):
 
 
 class Profile(APIView):
+
     def get(self, request):
+
         user_id = request.user.id
         user = get_object_or_404(get_user_model(), id=user_id)
         serializer = ProfileSerializer(user)
