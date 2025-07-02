@@ -6,11 +6,12 @@ from rest_framework.views import APIView
 from utils.messages import result_message
 
 from .models import *
-from .permissions import IsEmployer
+from .permissions import *
 from .serializers import *
 
 
 class JobList(APIView):
+
     def get(self, request):
 
         try:
@@ -26,6 +27,7 @@ class JobList(APIView):
 class JobDetail(APIView):
 
     def get(self, request, job_id):
+        print("Request user:", request.user.id)  # <- Add this line
 
         try:
             job = get_object_or_404(Job, id=job_id)
