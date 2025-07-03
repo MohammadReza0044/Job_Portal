@@ -1,3 +1,4 @@
+import requests
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -24,10 +25,20 @@ class ApplicationList(APIView):
 
     def post(sell, request):
         user_id = request.user.id
+        job_id = request.data.get("job_id")
 
         try:
             job_data = request.data.copy()
             job_data["user_id"] = user_id
+
+            job_check = requests.get(f"http://localhost:8000/api/job/{job_id}/")
+            if job_check.status_code != 200:
+                resul = result_message(
+                    "ERROR",
+                    status.HTTP_400_BAD_REQUEST,
+                    {"error": "Invalid or non-existent job"},
+                )
+                return Response(resul, status=status.HTTP_400_BAD_REQUEST)
 
             serializer = ApplicationSerializer(data=job_data)
             if serializer.is_valid():
