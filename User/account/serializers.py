@@ -42,20 +42,10 @@ class OutPutRegisterSerializer(serializers.ModelSerializer):
         token_class = RefreshToken
 
         refresh = token_class.for_user(user)
-
-        # Add custom claims to both tokens
-        refresh["role"] = user.role
-        refresh["email"] = user.email
-
-        # 👇 Access token must have them too
         access = refresh.access_token
-        access["role"] = user.role
-        access["email"] = user.email
 
         data["refresh"] = str(refresh)
         data["access"] = str(access)
-
-        print("Generated JWT with claims:", access.payload)  # Debug: Check output
 
         data["refresh"] = str(refresh)
         data["access"] = str(refresh.access_token)
@@ -70,8 +60,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
 
-        token["role"] = user.role
+        # Add custom claims
         token["email"] = user.email
+        token["role"] = user.role
+        token["first_name"] = user.first_name
+        token["last_name"] = user.last_name
 
         return token
 

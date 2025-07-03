@@ -3,6 +3,8 @@ class AuthenticatedUser:
         self.id = payload.get("user_id")
         self.email = payload.get("email")
         self.role = payload.get("role")
+        self.first_name = payload.get("first_name")
+        self.last_name = payload.get("last_name")
         self.payload = payload  # optionally store full JWT
         self.is_authenticated = True
 
