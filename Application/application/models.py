@@ -31,6 +31,7 @@ class JobSeekerProfile(models.Model):
     user_id = models.UUIDField(unique=True, db_index=True)
     full_name = models.CharField(max_length=100)
     cv_file = models.FileField(upload_to="cvs/")
+    extracted_text = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,3 +1,5 @@
+import requests
+from decouple import config
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
@@ -34,7 +36,23 @@ class JobList(APIView):
 
             serializer = JobSerializer(data=job_data)
             if serializer.is_valid():
-                serializer.save()
+                job = serializer.save()
+
+                # ✅ Trigger matching service here
+                try:
+                    headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
+                    payload = {
+                        "job_id": str(job.id),
+                        "job_description": job.description,
+                    }
+                    MATCHING_URL = (
+                        "http://localhost:8004/api/internal/trigger-matching/"
+                    )
+                    requests.post(MATCHING_URL, headers=headers, json=payload)
+                    print("message has been sent to matching service")
+                except Exception as e:
+                    print(f"Failed to notify matching service: {e}")
+
                 resul = result_message(
                     "CREATED", status.HTTP_201_CREATED, serializer.data
                 )

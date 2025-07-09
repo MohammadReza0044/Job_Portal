@@ -11,4 +11,5 @@ urlpatterns = [
     path("location/list/", LocationList.as_view(), name="location_list"),
     path("category/create/", CategoryList.as_view(), name="category_create"),
     path("category/list/", CategoryList.as_view(), name="category_list"),
+    path("internal/jobs/", InternalJobList.as_view(), name="internal_job_list"),
 ]

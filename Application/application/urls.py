@@ -9,4 +9,5 @@ urlpatterns = [
     path("list/", ApplicationList.as_view(), name="job_list"),
     path("profile/create/", ProfileList.as_view(), name="profile_create"),
     path("profile/list", ProfileList.as_view(), name="profile_list"),
+    path("internal/cvs/", InternalCVList.as_view(), name="internal_cv_list"),
 ]

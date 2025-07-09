@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from utils.internal_permission import IsInternalService
 from utils.messages import result_message
 
 from .models import *
@@ -27,7 +28,6 @@ class JobList(APIView):
 class JobDetail(APIView):
 
     def get(self, request, job_id):
-        print("Request user:", request.user.id)  # <- Add this line
 
         try:
             job = get_object_or_404(Job, id=job_id)
@@ -102,6 +102,21 @@ class CategoryList(APIView):
                     "ERROR", status.HTTP_400_BAD_REQUEST, serializer.errors
                 )
                 return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
+            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+
+
+class InternalJobList(APIView):
+    permission_classes = [IsInternalService]
+
+    def get(self, request):
+
+        try:
+            jobs = Job.objects.all()
+            serializer = InternalJobListSerializer(jobs, many=True)
+            resul = result_message("OK", status.HTTP_200_OK, serializer.data)
+            return Response(resul, status=status.HTTP_200_OK)
         except Exception as e:
             resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
             return Response(resul, status=status.HTTP_400_BAD_REQUEST)

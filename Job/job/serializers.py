@@ -36,3 +36,17 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = "__all__"
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = "__all__"
+
+
+class InternalJobListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Job
+        fields = ("id", "description")
