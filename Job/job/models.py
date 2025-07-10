@@ -45,6 +45,7 @@ class Job(models.Model):
     salary = models.CharField(max_length=255)
     job_type = models.CharField(max_length=50, choices=JOB_TYPE)
     description = models.TextField()
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

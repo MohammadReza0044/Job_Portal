@@ -4,7 +4,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from matching.tasks import *
+from utils.internal_permission import IsInternalService
 from utils.messages import result_message
+
+from .models import JobMatch
+from .serializers import InternalMatchingListSerializer
 
 
 class InternalMatchNewJobToAllCvsTrigger(APIView):
@@ -57,3 +61,18 @@ class InternalMatchNewCvToAllJobsTrigger(APIView):
         except Exception as e:
             result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class InternalMatchList(APIView):
+    permission_classes = [IsInternalService]
+
+    def get(self, request):
+
+        try:
+            matches = JobMatch.objects.all()
+            serializer = InternalMatchingListSerializer(matches, many=True)
+            result = result_message("OK", status.HTTP_200_OK, serializer.data)
+            return Response(result, status=status.HTTP_200_OK)
+        except Exception as e:
+            resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
+            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
