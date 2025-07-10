@@ -42,8 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
-    "job",
-    "employer_admin",
+    "matching",
 ]
 
 MIDDLEWARE = [
@@ -131,10 +130,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "utils.authentication.JWTAuthentication",
-    ],
-}
+
+# Celery config
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
 
 INTERNAL_SERVICE_TOKEN = config("INTERNAL_SERVICE_TOKEN")

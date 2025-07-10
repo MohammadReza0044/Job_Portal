@@ -136,3 +136,5 @@ REST_FRAMEWORK = {
         "utils.authentication.JWTAuthentication",
     ],
 }
+
+INTERNAL_SERVICE_TOKEN = config("INTERNAL_SERVICE_TOKEN")
