@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import requests
 from celery import shared_task
@@ -68,3 +66,25 @@ def match_new_cv_to_all_jobs(user_id, cv_text):
 
 def cosine_similarity(vec1, vec2):
     return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+
+
+@shared_task
+def clean_expired_matches():
+
+    JOB_DETAIL_API = "http://localhost:8000/api/internal/job/{job_id}/"
+    headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
+
+    matches = JobMatch.objects.all()
+    for match in matches:
+        try:
+            response = requests.get(
+                JOB_DETAIL_API.format(job_id=match.job_id), headers=headers, timeout=5
+            )
+            if response.status_code == 400:
+                match.delete()
+            elif response.status_code == 200:
+                job_data = response.json()
+                if not job_data.get("status", True):
+                    match.delete()
+        except Exception as e:
+            print(f"Failed to verify job {match.job_id}: {e}")

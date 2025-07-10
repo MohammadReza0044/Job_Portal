@@ -33,6 +33,7 @@ class JobList(APIView):
         try:
             job_data = request.data.copy()
             job_data["employer_id"] = user_id
+            job_data["status"] = True
 
             serializer = JobSerializer(data=job_data)
             if serializer.is_valid():

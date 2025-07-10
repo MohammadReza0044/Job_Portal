@@ -12,4 +12,9 @@ urlpatterns = [
     path("category/create/", CategoryList.as_view(), name="category_create"),
     path("category/list/", CategoryList.as_view(), name="category_list"),
     path("internal/jobs/", InternalJobList.as_view(), name="internal_job_list"),
+    path(
+        "internal/job/<str:job_id>/",
+        InternalJobDetail.as_view(),
+        name="internal_job_detail",
+    ),
 ]

@@ -119,3 +119,17 @@ class InternalJobList(APIView):
         except Exception as e:
             resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
             return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+
+
+class InternalJobDetail(APIView):
+    permission_classes = [IsInternalService]
+
+    def get(self, request, job_id):
+
+        try:
+            job = get_object_or_404(Job, id=job_id)
+            serializer = InternalJobListSerializer(job)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
+            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
