@@ -43,30 +43,27 @@ def match_all_cvs_to_new_job(job_id, job_description):
         JobMatch.objects.create(user_id=user_id, job_id=job_id, score=score)
 
 
-# @shared_task
-# def match_new_cv_to_all_jobs(user_id, cv_text):
-#     """
-#     Triggered when a new CV is submitted.
-#     Matches this CV to all existing jobs from the job service.
-#     """
-#     cv_vec = model.encode(cv_text)
+@shared_task
+def match_new_cv_to_all_jobs(user_id, cv_text):
 
-#     # Fetch all jobs from job service
-#     response = requests.get(JOB_SERVICE_URL)
-#     if response.status_code != 200:
-#         raise Exception("Failed to fetch jobs from Job Service")
-#     jobs = response.json()  # expects a list of {"id": ..., "description": ...}
+    cv_vec = model.encode(cv_text)
 
-#     results = []
-#     for job in jobs:
-#         job_vec = model.encode(job["description"])
-#         score = cosine_similarity(cv_vec, job_vec)
-#         results.append((job["id"], score))
+    # Fetch all jobs from job service
+    response = requests.get(JOB_SERVICE_URL, headers=headers)
+    if response.status_code != 200:
+        raise Exception("Failed to fetch jobs from Job Service")
+    jobs = response.json()
 
-#     # Store top 5 matches
-#     top_matches = sorted(results, key=lambda x: x[1], reverse=True)[:5]
-#     for job_id, score in top_matches:
-#         JobRecommendation.objects.create(user_id=user_id, job_id=job_id, score=score)
+    results = []
+    for job in jobs:
+        job_vec = model.encode(job["description"])
+        score = cosine_similarity(cv_vec, job_vec)
+        results.append((job["id"], score))
+
+    # Store top 5 matches
+    top_matches = sorted(results, key=lambda x: x[1], reverse=True)[:5]
+    for job_id, score in top_matches:
+        JobMatch.objects.create(user_id=user_id, job_id=job_id, score=score)
 
 
 def cosine_similarity(vec1, vec2):
