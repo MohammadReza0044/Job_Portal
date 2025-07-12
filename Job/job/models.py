@@ -44,6 +44,7 @@ class Job(models.Model):
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
     salary = models.CharField(max_length=255)
     job_type = models.CharField(max_length=50, choices=JOB_TYPE)
+    status = models.BooleanField(default=True)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -1,4 +1,5 @@
 import requests
+from decouple import config
 from pdfminer.high_level import extract_text
 from rest_framework import status
 from rest_framework.response import Response
@@ -97,6 +98,19 @@ class ProfileList(APIView):
                     print(f"Error extracting text from CV: {e}")
                     instance.extracted_text = ""
                     instance.save(update_fields=["extracted_text"])
+
+                # ✅ Trigger matching service here
+                try:
+                    headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
+                    payload = {
+                        "user_id": str(user_id),
+                        "cv_text": instance.extracted_text,
+                    }
+                    MATCHING_URL = "http://localhost:8004/api/internal/trigger-matching-new-cv-to-jobs/"
+                    requests.post(MATCHING_URL, headers=headers, json=payload)
+                    print("message has been sent to matching service")
+                except Exception as e:
+                    print(f"Failed to notify matching service: {e}")
 
                 resul = result_message(
                     "CREATED", status.HTTP_201_CREATED, serializer.data

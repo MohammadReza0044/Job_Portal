@@ -4,7 +4,6 @@ from .models import *
 
 
 class JobSerializer(serializers.ModelSerializer):
-
     employer_id = serializers.UUIDField()
 
     class Meta:
@@ -18,10 +17,11 @@ class JobUpdateSerializer(serializers.ModelSerializer):
     job_type = serializers.ChoiceField(choices=Job.JOB_TYPE, required=False)
     salary = serializers.CharField(max_length=255, required=False)
     description = serializers.CharField(max_length=None, required=False)
+    is_active = serializers.BooleanField(required=False)
 
     class Meta:
         model = Job
-        fields = ("title", "location", "job_type", "salary", "description")
+        fields = ("title", "location", "job_type", "salary", "description", "is_active")
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -49,4 +49,4 @@ class InternalJobListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Job
-        fields = ("id", "description")
+        fields = ("id", "description", "status")

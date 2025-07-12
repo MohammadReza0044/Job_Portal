@@ -33,6 +33,7 @@ class JobList(APIView):
         try:
             job_data = request.data.copy()
             job_data["employer_id"] = user_id
+            job_data["status"] = True
 
             serializer = JobSerializer(data=job_data)
             if serializer.is_valid():
@@ -45,9 +46,7 @@ class JobList(APIView):
                         "job_id": str(job.id),
                         "job_description": job.description,
                     }
-                    MATCHING_URL = (
-                        "http://localhost:8004/api/internal/trigger-matching/"
-                    )
+                    MATCHING_URL = "http://localhost:8004/api/internal/trigger-matching-new-job-to-cvs/"
                     requests.post(MATCHING_URL, headers=headers, json=payload)
                     print("message has been sent to matching service")
                 except Exception as e:
