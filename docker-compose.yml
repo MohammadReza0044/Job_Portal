@@ -1,0 +1,96 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis_cache
+    restart: always
+    ports:
+      - "6379:6379"
+
+  user-service:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    container_name: user_service
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./user:/app
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  job-service:
+    build:
+      context: ./job
+      dockerfile: Dockerfile
+    container_name: job_service
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./job:/app
+    ports:
+      - "8004:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  application-service:
+    build:
+      context: ./application
+      dockerfile: Dockerfile
+    container_name: application_service
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./application:/app
+    ports:
+      - "8002:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  matching-service:
+    build:
+      context: ./matching
+      dockerfile: Dockerfile
+    container_name: matching_service
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./matching:/app
+      - ./media:/app/media  
+    ports:
+      - "8003:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  celery:
+    build:
+      context: ./matching
+      dockerfile: Dockerfile
+    container_name: celery_worker
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - ./matching:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  celery-beat:
+    build:
+      context: ./matching
+      dockerfile: Dockerfile
+    container_name: celery_beat
+    command: celery -A config beat --loglevel=info
+    volumes:
+      - ./matching:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
