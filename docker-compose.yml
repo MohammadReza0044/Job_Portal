@@ -10,7 +10,7 @@ services:
 
   user-service:
     build:
-      context: ./user
+      context: ./User
       dockerfile: Dockerfile
     container_name: user_service
     command:  sh -c "
@@ -19,7 +19,7 @@ services:
         gunicorn config.wsgi:application --bind 0.0.0.0:8000
       "
     volumes:
-      - ./user:/app
+      - ./User:/app
     ports:
       - "8001:8000"
     env_file:
@@ -29,7 +29,7 @@ services:
 
   job-service:
     build:
-      context: ./job
+      context: ./Job
       dockerfile: Dockerfile
     container_name: job_service
     command:  sh -c "
@@ -38,7 +38,7 @@ services:
         gunicorn config.wsgi:application --bind 0.0.0.0:8000
       "
     volumes:
-      - ./job:/app
+      - ./Job:/app
     ports:
       - "8004:8000"
     env_file:
@@ -48,7 +48,7 @@ services:
 
   application-service:
     build:
-      context: ./application
+      context: ./Application
       dockerfile: Dockerfile
     container_name: application_service
     command:  sh -c "
@@ -57,7 +57,7 @@ services:
         gunicorn config.wsgi:application --bind 0.0.0.0:8000
       "
     volumes:
-      - ./application:/app
+      - ./Application:/app
     ports:
       - "8002:8000"
     env_file:
@@ -67,7 +67,7 @@ services:
 
   matching-service:
     build:
-      context: ./matching
+      context: ./Matching
       dockerfile: Dockerfile
     container_name: matching_service
     command:  sh -c "
@@ -87,7 +87,7 @@ services:
 
   celery:
     build:
-      context: ./matching
+      context: ./Matching
       dockerfile: Dockerfile
     container_name: celery_worker
     command: celery -A config worker --loglevel=info
@@ -100,7 +100,7 @@ services:
 
   celery-beat:
     build:
-      context: ./matching
+      context: ./Matching
       dockerfile: Dockerfile
     container_name: celery_beat
     command: celery -A config beat --loglevel=info
