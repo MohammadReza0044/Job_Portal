@@ -13,13 +13,15 @@ services:
       context: ./User
       dockerfile: Dockerfile
     container_name: user_service
-    command:  sh -c "
-        python manage.py migrate &&
-        python manage.py collectstatic --noinput &&
-        gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    command: sh -c "
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000
       "
     volumes:
       - ./User:/app
+      - ./utils:/app/utils
+      - ./static:/app/staticfiles
     ports:
       - "8001:8000"
     env_file:
@@ -32,13 +34,15 @@ services:
       context: ./Job
       dockerfile: Dockerfile
     container_name: job_service
-    command:  sh -c "
-        python manage.py migrate &&
-        python manage.py collectstatic --noinput &&
-        gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    command: sh -c "
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000
       "
     volumes:
       - ./Job:/app
+      - ./utils:/app/utils
+      - ./static:/app/staticfiles
     ports:
       - "8004:8000"
     env_file:
@@ -51,13 +55,15 @@ services:
       context: ./Application
       dockerfile: Dockerfile
     container_name: application_service
-    command:  sh -c "
-        python manage.py migrate &&
-        python manage.py collectstatic --noinput &&
-        gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    command: sh -c "
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000
       "
     volumes:
       - ./Application:/app
+      - ./utils:/app/utils
+      - ./static:/app/staticfiles
     ports:
       - "8002:8000"
     env_file:
@@ -70,14 +76,16 @@ services:
       context: ./Matching
       dockerfile: Dockerfile
     container_name: matching_service
-    command:  sh -c "
-        python manage.py migrate &&
-        python manage.py collectstatic --noinput &&
-        gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    command: sh -c "
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000
       "
     volumes:
-      - ./matching:/app
-      - ./media:/app/media  
+      - ./Matching:/app
+      - ./media:/app/media
+      - ./utils:/app/utils
+      - ./static:/app/staticfiles
     ports:
       - "8003:8000"
     env_file:
@@ -92,11 +100,14 @@ services:
     container_name: celery_worker
     command: celery -A config worker --loglevel=info
     volumes:
-      - ./matching:/app
+      - ./Matching:/app
+      - ./utils:/app/utils
+      - ./static:/app/staticfiles
     env_file:
       - .env
     depends_on:
       - redis
+      - matching-service
 
   celery-beat:
     build:
@@ -105,8 +116,11 @@ services:
     container_name: celery_beat
     command: celery -A config beat --loglevel=info
     volumes:
-      - ./matching:/app
+      - ./Matching:/app
+      - ./utils:/app/utils
+      - ./static:/app/staticfiles
     env_file:
       - .env
     depends_on:
       - redis
+      - matching-service
