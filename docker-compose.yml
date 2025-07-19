@@ -15,15 +15,14 @@ services:
     container_name: user_service
     command: sh -c "
       python manage.py migrate &&
-      python manage.py collectstatic --noinput &&
-      gunicorn config.wsgi:application --bind 0.0.0.0:8000
+      python manage.py runserver 0.0.0.0:8001
       "
     volumes:
       - ./User:/app
       - ./utils:/app/utils
       - ./static:/app/staticfiles
     ports:
-      - "8001:8000"
+      - "8001:8001"
     env_file:
       - .env
     depends_on:
@@ -36,15 +35,14 @@ services:
     container_name: job_service
     command: sh -c "
       python manage.py migrate &&
-      python manage.py collectstatic --noinput &&
-      gunicorn config.wsgi:application --bind 0.0.0.0:8000
+      python manage.py runserver 0.0.0.0:8000
       "
     volumes:
       - ./Job:/app
       - ./utils:/app/utils
       - ./static:/app/staticfiles
     ports:
-      - "8004:8000"
+      - "8000:8000"
     env_file:
       - .env
     depends_on:
@@ -57,15 +55,14 @@ services:
     container_name: application_service
     command: sh -c "
       python manage.py migrate &&
-      python manage.py collectstatic --noinput &&
-      gunicorn config.wsgi:application --bind 0.0.0.0:8000
+      python manage.py runserver 0.0.0.0:8002
       "
     volumes:
       - ./Application:/app
       - ./utils:/app/utils
       - ./static:/app/staticfiles
     ports:
-      - "8002:8000"
+      - "8002:8002"
     env_file:
       - .env
     depends_on:
@@ -78,8 +75,7 @@ services:
     container_name: matching_service
     command: sh -c "
       python manage.py migrate &&
-      python manage.py collectstatic --noinput &&
-      gunicorn config.wsgi:application --bind 0.0.0.0:8000
+      python manage.py runserver 0.0.0.0:8003
       "
     volumes:
       - ./Matching:/app
@@ -87,7 +83,7 @@ services:
       - ./utils:/app/utils
       - ./static:/app/staticfiles
     ports:
-      - "8003:8000"
+      - "8003:8003"
     env_file:
       - .env
     depends_on:
