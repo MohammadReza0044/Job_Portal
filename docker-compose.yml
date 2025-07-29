@@ -9,81 +9,57 @@ services:
       - "6379:6379"
 
   user-service:
-    build:
-      context: ./User
-      dockerfile: Dockerfile
-    container_name: user_service
-    command: sh -c "
-      python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8001
-      "
+    build: ./User
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8001"
     volumes:
       - ./User:/app
       - ./utils:/app/utils
-      - ./static:/app/staticfiles
     ports:
       - "8001:8001"
+    restart: always
     env_file:
       - .env
     depends_on:
       - redis
 
   job-service:
-    build:
-      context: ./Job
-      dockerfile: Dockerfile
-    container_name: job_service
-    command: sh -c "
-      python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8000
-      "
+    build: ./Job
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./Job:/app
       - ./utils:/app/utils
-      - ./static:/app/staticfiles
     ports:
       - "8000:8000"
+    restart: always
     env_file:
       - .env
     depends_on:
       - redis
 
   application-service:
-    build:
-      context: ./Application
-      dockerfile: Dockerfile
-    container_name: application_service
-    command: sh -c "
-      python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8002
-      "
+    build: ./Application
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8002"
     volumes:
       - ./Application:/app
       - ./utils:/app/utils
-      - ./static:/app/staticfiles
     ports:
       - "8002:8002"
+    restart: always
     env_file:
       - .env
     depends_on:
       - redis
 
   matching-service:
-    build:
-      context: ./Matching
-      dockerfile: Dockerfile
-    container_name: matching_service
-    command: sh -c "
-      python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8003
-      "
+    build: ./Matching:/app
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8003"
     volumes:
       - ./Matching:/app
-      - ./media:/app/media
       - ./utils:/app/utils
-      - ./static:/app/staticfiles
+      - ./media:/app/media
     ports:
       - "8003:8003"
+    restart: always
     env_file:
       - .env
     depends_on:
