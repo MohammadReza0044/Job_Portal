@@ -66,9 +66,7 @@ services:
       - redis
 
   celery:
-    build:
-      context: ./Matching
-      dockerfile: Dockerfile
+    image: matching-service
     container_name: celery_worker
     command: celery -A config worker --loglevel=info
     volumes:
@@ -79,12 +77,10 @@ services:
       - .env
     depends_on:
       - redis
-      - matching-service
+
 
   celery-beat:
-    build:
-      context: ./Matching
-      dockerfile: Dockerfile
+    image: matching-service
     container_name: celery_beat
     command: celery -A config beat --loglevel=info
     volumes:
@@ -95,4 +91,4 @@ services:
       - .env
     depends_on:
       - redis
-      - matching-service
+
