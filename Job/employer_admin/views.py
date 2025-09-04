@@ -46,7 +46,7 @@ class JobList(APIView):
                         "job_id": str(job.id),
                         "job_description": job.description,
                     }
-                    MATCHING_URL = "http://52.56.64.132:8004/api/internal/trigger-matching-new-job-to-cvs/"
+                    MATCHING_URL = "http://localhost:8004/api/internal/trigger-matching-new-job-to-cvs/"
                     requests.post(MATCHING_URL, headers=headers, json=payload)
                     print("message has been sent to matching service")
                 except Exception as e:

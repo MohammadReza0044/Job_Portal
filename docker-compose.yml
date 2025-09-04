@@ -38,25 +38,10 @@ services:
 
   application-service:
     build: ./Application
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8002"
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8003"
     volumes:
       - ./Application:/app
       - ./utils:/app/utils
-    ports:
-      - "8002:8002"
-    restart: always
-    env_file:
-      - .env
-    depends_on:
-      - redis
-
-  matching-service:
-    build: ./Matching
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8003"
-    volumes:
-      - ./Matching:/app
-      - ./utils:/app/utils
-      - ./media:/app/media
     ports:
       - "8003:8003"
     restart: always
@@ -65,14 +50,30 @@ services:
     depends_on:
       - redis
 
+  matching-service:
+    build: ./Matching
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8004"
+    volumes:
+      - ./Matching:/app
+      - ./utils:/app/utils
+      - ./media:/app/media
+    ports:
+      - "8004:8004"
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
   celery:
-    image: matching-service
+    image: job_portal-matching-service:latest
     container_name: celery_worker
     command: celery -A config worker --loglevel=info
     volumes:
       - ./Matching:/app
       - ./utils:/app/utils
       - ./static:/app/staticfiles
+    restart: always
     env_file:
       - .env
     depends_on:
@@ -80,13 +81,14 @@ services:
 
 
   celery-beat:
-    image: matching-service
+    image: job_portal-matching-service:latest
     container_name: celery_beat
     command: celery -A config beat --loglevel=info
     volumes:
       - ./Matching:/app
       - ./utils:/app/utils
       - ./static:/app/staticfiles
+    restart: always
     env_file:
       - .env
     depends_on:

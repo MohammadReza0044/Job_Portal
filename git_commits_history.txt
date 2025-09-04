@@ -1,0 +1,327 @@
+commit 97760152ebacb6f9559db4dd35bc16bc3d76a0e6
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Tue Aug 5 18:26:48 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Tue Aug 5 18:26:48 2025 +0100
+
+    EC2 ip address have been added to the project.
+
+commit 8a2c64c909462e8a9f885fd8a508ab03fb9aa4e3
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Thu Jul 31 17:12:16 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Thu Jul 31 17:12:16 2025 +0100
+
+    docler compose updated
+
+commit e4037d8f2d92980d0043618e77c3ed64500b86c8
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Thu Jul 31 01:02:51 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Thu Jul 31 01:02:51 2025 +0100
+
+    docker-compose and matching:req.txt updated.
+
+commit b40e42687caf6a485b8233bedd6db336bc08e995
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Wed Jul 30 23:06:09 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Wed Jul 30 23:06:09 2025 +0100
+
+    matching service req.txt updated.
+
+commit 3d0b0a738310c4440e521c83559a50e2aecb301c
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Wed Jul 30 22:55:25 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Wed Jul 30 22:55:25 2025 +0100
+
+    list(config("ALLOWED_HOSTS").split(",")) has been added to all services setting
+
+commit 37a337fb16559da6e299caa06af531f5c1227fe4
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Tue Jul 29 20:15:49 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Tue Jul 29 20:15:49 2025 +0100
+
+    user service: unit test done.
+
+commit 8c132213c2d557bb0d46735944e124d0d05c7686
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Sat Jul 19 13:29:32 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Sat Jul 19 13:29:32 2025 +0100
+
+    docker-compose updated
+
+commit 552fc8a7f21bf9963a53ba1a6905f48703d2a35c
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Tue Jul 15 20:54:47 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Tue Jul 15 20:54:47 2025 +0100
+
+    docker-compose updated. settings of all services updated. STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  added to all settings.
+
+commit 86cb6bce82adacf5875c9db159eca9929f0b9b56
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Mon Jul 14 15:08:22 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Mon Jul 14 15:08:22 2025 +0100
+
+    docker-compose updated2.
+
+commit ca3828c89c4de4ad112c97dbb8a611da8bd7695e
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Mon Jul 14 14:59:18 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Mon Jul 14 14:59:18 2025 +0100
+
+    docker-compose updated.
+
+commit ce7c21cc27c3b4a4dfca4c2f59585edf342ec2cd
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Mon Jul 14 14:54:00 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Mon Jul 14 14:54:00 2025 +0100
+
+    dockerfile and docker-compose have been added.
+
+commit 27c46fa3bd8353c487a84d58cd65b676ffb1ba5e
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Sat Jul 12 13:03:39 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Sat Jul 12 13:03:39 2025 +0100
+
+    README file updated.
+
+commit 85ec9b1cdd4fba7f28e7f8b10f8f787968ee2c86
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Thu Jul 10 20:27:57 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Thu Jul 10 20:27:57 2025 +0100
+
+    matching service: add celery  beat to runt clean task to delete removed or diactived jobs from job-match table.
+
+commit 2bbeb8b25da064b80f8d893c88cc7b327020ba51
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Thu Jul 10 18:08:24 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Thu Jul 10 18:08:24 2025 +0100
+
+    job service: is_active has been added to the job model.
+
+commit 5243793cac3c7e2efea59eb7916df962e1b5a46b
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Thu Jul 10 17:29:05 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Thu Jul 10 17:29:05 2025 +0100
+
+    matching service: match new cv to all jobs is done. it will be trigered on creating a new cv.
+
+commit 3283ad29e4654ef6fec586365637611dd5946450
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Thu Jul 10 16:52:37 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Thu Jul 10 16:52:37 2025 +0100
+
+    .env-sample has been added.
+
+commit afa03271a0ae63544c96494f921f63b6141db3a7
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Wed Jul 9 23:46:29 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Wed Jul 9 23:46:29 2025 +0100
+
+    matching sercive has been done. celery task will triger on creating a new job to all cvs.
+
+commit c568189d32e17b6d9cdf8baa059d84737b3622e1
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Tue Jul 8 21:59:10 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Tue Jul 8 21:59:10 2025 +0100
+
+    matching service initialized.
+
+commit 6b4c2306b5b5dcc530a2fce43ff83a7e3030b5ad
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Thu Jul 3 20:10:38 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Thu Jul 3 20:10:38 2025 +0100
+
+    application service: profile model and crud for saving cv are done.
+
+commit e1e81336936b1c37e2f7df31c1c83c403fb3a001
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Thu Jul 3 15:50:36 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Thu Jul 3 15:50:36 2025 +0100
+
+    validation job_id before saving in application service is done.
+
+commit 8393b4f7e5ad529f7b575559425b3baf35f2f9ee
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Wed Jul 2 21:21:22 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Wed Jul 2 21:21:22 2025 +0100
+
+    job list and detail in job service are done.
+
+commit a2907e50791eca44ab11bbaa64d27c39cdc24d97
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Wed Jul 2 20:58:00 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Wed Jul 2 20:58:00 2025 +0100
+
+    employer_admin in job service is done.
+
+commit 15b7dd706384b965255f94e741e4f98e28607913
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Wed Jul 2 19:57:53 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Wed Jul 2 19:57:53 2025 +0100
+
+    Application create and list in application service done.
+
+commit ce4ff89d5b76a04f518e83cfae57f4a6889c39e9
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Mon May 12 22:09:12 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Mon May 12 22:09:12 2025 +0100
+
+    job service: permission in Category and Location done for only Employer role.
+
+commit 55763b36f9d07e6caec48c962db9171b88dc9438
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Mon May 12 22:00:22 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Mon May 12 22:00:22 2025 +0100
+
+    job service: add permission for only employer has been done. user service: add new loging endpoint due of lack of sending user role info in decoding jwt.
+
+commit bc8d4ad652ca4550bd54d544c15a201f3882c8b5
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Mon May 12 20:04:24 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Mon May 12 20:04:24 2025 +0100
+
+    job sercive: get and post are done.
+
+commit e965823ceed24393396868d687c4fdb59f4ec1bc
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Mon May 12 19:20:36 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Mon May 12 19:20:36 2025 +0100
+
+    Application service: application app created.
+
+commit 157e1e69edd49387adc5020311e869dae727432e
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Mon May 12 19:14:25 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Mon May 12 19:14:25 2025 +0100
+
+    application service initial.
+
+commit 3855f1559c15436ae1dd61cbb1f831c2fef0b3c4
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Sat May 10 13:36:08 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Sat May 10 13:36:08 2025 +0100
+
+    job service: jwt authentication and permission have been done. folder structure and utils folder got improved.
+
+commit 6fe346526b67753186a9aa5fc98fb5c469f0f795
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Sat May 10 13:13:41 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Sat May 10 13:13:41 2025 +0100
+
+    folder structure has been improved.
+
+commit b251a9ce582cf25641d22b1547692a7e0a2aeb3a
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Fri May 9 21:21:44 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Fri May 9 21:21:44 2025 +0100
+
+    microservice: Job service has been done.
+
+commit b02730c7479d44dc5abbfa5cccf1b197844126ff
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Fri May 9 21:09:51 2025 +0100
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Fri May 9 21:09:51 2025 +0100
+
+    microservice: user service has been done.
+
+commit 034e7ed1fef327667cd175808bf35e5492f1abbf
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Sun Nov 17 13:24:32 2024 +0000
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Sun Nov 17 13:24:32 2024 +0000
+
+    filtering jobs in joblist is done.
+
+commit 76ffb8da8694b7bfd47e717dee19fcd24c99aa14
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Sun Nov 17 11:47:52 2024 +0000
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Sun Nov 17 11:47:52 2024 +0000
+
+    permission for job APIs has been done.
+
+commit 57f20c2d5079075e0e3b67793f51040bfd1f4538
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Sun Nov 17 11:03:32 2024 +0000
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Sun Nov 17 11:03:32 2024 +0000
+
+    job app CRUD is ok
+
+commit cda4cd4a304e7ac8d96b8b9acd0f0173d6e72a1b
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Sun Nov 17 10:41:19 2024 +0000
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Sun Nov 17 10:41:19 2024 +0000
+
+    job app has been created, joblist view for get and post is done.
+
+commit 43544a4d949cb9f8a5c526525d7b42fedc322a3e
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Fri Nov 15 18:46:14 2024 +0000
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Fri Nov 15 18:46:14 2024 +0000
+
+    profile api done
+
+commit 5d9ef9e4e216595716bb2ee389af8727d9179e05
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Fri Nov 15 16:23:33 2024 +0000
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Fri Nov 15 16:23:33 2024 +0000
+
+    user model and register api are done
+
+commit 00d9c6f2c25dab97c3ec97fba0a29a34d83eec16
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Fri Nov 15 13:52:29 2024 +0000
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Fri Nov 15 13:52:29 2024 +0000
+
+    account app has been created
+
+commit 8c611853e5e0c62ad8116eaee293d9862775f9d6
+Author:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+AuthorDate: Fri Nov 15 13:35:31 2024 +0000
+Commit:     MohammadReza0044 <mohammadreza.shayegan@gmail.com>
+CommitDate: Fri Nov 15 13:35:31 2024 +0000
+
+    initial project config
+
+commit c9484d005e2933c19e677ee9dba22e460b2f058f
+Author:     Mohammad Reza <96623126+MohammadReza0044@users.noreply.github.com>
+AuthorDate: Fri Nov 15 13:16:24 2024 +0000
+Commit:     GitHub <noreply@github.com>
+CommitDate: Fri Nov 15 13:16:24 2024 +0000
+
+    Initial commit
