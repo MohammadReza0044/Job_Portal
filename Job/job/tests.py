@@ -1,62 +1,52 @@
-# import uuid
+import uuid
 
-# from django.contrib.auth import get_user_model
-# from django.urls import reverse
-# from rest_framework import status
-# from rest_framework.test import APIClient, APITestCase
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient
 
-# from .models import Category, Job, Location
-# from .serializers import JobSerializer
+from job.models import Category, Job, Location
 
 
-# class JobAPITestCase(APITestCase):
+class AuthenticatedJobViewsTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
 
-#     def setUp(self):
-#         self.client = APIClient()
+        # Supporting objects
+        self.location = Location.objects.create(title="London")
+        self.category = Category.objects.create(title="Engineering")
 
-#         # Create sample Location and Category
-#         self.location = Location.objects.create(title="Manchester")
-#         self.category = Category.objects.create(title="Software Development")
+        # Authorized user
+        self.user_id = uuid.uuid4()
 
-#         # Create sample job
-#         self.job = Job.objects.create(
-#             employer_id=uuid.uuid4(),
-#             title="Django Developer",
-#             location_id=self.location,
-#             category_id=self.category,
-#             salary="£40,000",
-#             job_type="Full_time",
-#             status=True,
-#             description="We are hiring Django developers.",
-#         )
+        # Jobs
+        self.job1 = Job.objects.create(
+            employer_id=uuid.uuid4(),
+            title="Backend Developer",
+            location_id=self.location,
+            category_id=self.category,
+            salary="£40k",
+            job_type="Full_time",
+            description="Backend dev role",
+        )
+        self.job2 = Job.objects.create(
+            employer_id=uuid.uuid4(),
+            title="Frontend Developer",
+            location_id=self.location,
+            category_id=self.category,
+            salary="£35k",
+            job_type="Part_time",
+            description="Frontend dev role",
+        )
 
-#         self.list_url = reverse("job:job_list")
-#         self.detail_url = reverse("job:job_detail", args=[self.job.id])
+    def test_get_all_jobs(self):
+        url = reverse("job:job_list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["Result"]), 2)
 
-#     def test_get_job_list(self):
-#         """Test retrieving all jobs"""
-#         response = self.client.get(self.list_url)
-#         jobs = Job.objects.all()
-#         serializer = JobSerializer(jobs, many=True)
-
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.assertEqual(response.data["Message"], "OK")
-#         self.assertEqual(response.data["Result"], serializer.data)
-
-#     def test_get_job_detail(self):
-#         """Test retrieving a single job by ID"""
-#         response = self.client.get(self.detail_url)
-#         job = Job.objects.get(id=self.job.id)
-#         serializer = JobSerializer(job)
-
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.assertEqual(response.data["Message"], "OK")
-#         self.assertEqual(response.data["Result"], serializer.data)
-
-#     def test_get_job_detail_not_found(self):
-#         """Test retrieving a non-existing job"""
-#         invalid_url = reverse("job:job_detail", args=[uuid.uuid4()])
-#         response = self.client.get(invalid_url)
-
-#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-#         self.assertEqual(response.data["Message"], "ERROR")
+    def test_get_single_job(self):
+        url = reverse("job:job_detail", kwargs={"job_id": str(self.job1.id)})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["Result"]["title"], "Backend Developer")
