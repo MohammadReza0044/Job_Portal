@@ -1,6 +1,9 @@
+import uuid
+
+
 class AuthenticatedUser:
     def __init__(self, payload):
-        self.id = payload.get("user_id")
+        self.id = uuid.UUID(payload.get("id"))
         self.email = payload.get("email")
         self.role = payload.get("role")
         self.first_name = payload.get("first_name")

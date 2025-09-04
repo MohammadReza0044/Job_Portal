@@ -34,7 +34,7 @@ class ApplicationList(APIView):
             application_data = request.data.copy()
             application_data["user_id"] = user_id
 
-            job_check = requests.get(f"http://18.168.85.163:8000/api/job/{job_id}/")
+            job_check = requests.get(f"http://localhost:8000/api/job/{job_id}/")
             if job_check.status_code != 200:
                 resul = result_message(
                     "ERROR",
@@ -106,7 +106,7 @@ class ProfileList(APIView):
                         "user_id": str(user_id),
                         "cv_text": instance.extracted_text,
                     }
-                    MATCHING_URL = "http://52.56.64.132:8004/api/internal/trigger-matching-new-cv-to-jobs/"
+                    MATCHING_URL = "http://localhost:8004/api/internal/trigger-matching-new-cv-to-jobs/"
                     requests.post(MATCHING_URL, headers=headers, json=payload)
                     print("message has been sent to matching service")
                 except Exception as e:

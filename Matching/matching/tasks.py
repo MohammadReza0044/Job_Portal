@@ -10,8 +10,8 @@ from .models import JobMatch
 # Load embedding model once
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-JOB_SERVICE_URL = "http://18.168.85.163:8000/api/internal/jobs/"
-APPLICATION_SERVICE_URL = "http://18.168.85.163:8003/api/application/internal/cvs/"
+JOB_SERVICE_URL = "http://localhost:8000/api/internal/jobs/"
+APPLICATION_SERVICE_URL = "http://localhost:8003/api/application/internal/cvs/"
 headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
 
 
@@ -71,7 +71,7 @@ def cosine_similarity(vec1, vec2):
 @shared_task
 def clean_expired_matches():
 
-    JOB_DETAIL_API = "http://18.168.85.163:8000/api/internal/job/{job_id}/"
+    JOB_DETAIL_API = "http://localhost:8000/api/internal/job/{job_id}/"
     headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
 
     matches = JobMatch.objects.all()
