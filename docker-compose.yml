@@ -1,5 +1,19 @@
 version: "3.9"
 
+networks:
+  job_portal_net:
+    driver: bridge
+
+x-matching-base: &matching-base
+  build: ./Matching
+  env_file:
+    - .env
+  volumes:
+    - ./Matching:/app
+    - ./utils:/app/utils
+  networks:
+    - job_portal_net
+
 services:
   redis:
     image: redis:alpine
@@ -7,6 +21,8 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    networks:
+      - job_portal_net
 
   user-service:
     build: ./User
@@ -21,6 +37,8 @@ services:
       - .env
     depends_on:
       - redis
+    networks:
+      - job_portal_net
 
   job-service:
     build: ./Job
@@ -35,62 +53,46 @@ services:
       - .env
     depends_on:
       - redis
+    networks:
+      - job_portal_net
 
   application-service:
     build: ./Application
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8003"
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8002"
     volumes:
       - ./Application:/app
       - ./utils:/app/utils
     ports:
-      - "8003:8003"
+      - "8002:8002"
     restart: always
     env_file:
       - .env
     depends_on:
       - redis
+    networks:
+      - job_portal_net
 
   matching-service:
-    build: ./Matching
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8004"
-    volumes:
-      - ./Matching:/app
-      - ./utils:/app/utils
-      - ./media:/app/media
+    <<: *matching-base
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8003"
     ports:
-      - "8004:8004"
+      - "8003:8003"
     restart: always
-    env_file:
-      - .env
     depends_on:
       - redis
 
   celery:
-    image: job_portal-matching-service:latest
+    <<: *matching-base
     container_name: celery_worker
     command: celery -A config worker --loglevel=info
-    volumes:
-      - ./Matching:/app
-      - ./utils:/app/utils
-      - ./static:/app/staticfiles
     restart: always
-    env_file:
-      - .env
     depends_on:
       - redis
-
 
   celery-beat:
-    image: job_portal-matching-service:latest
+    <<: *matching-base
     container_name: celery_beat
     command: celery -A config beat --loglevel=info
-    volumes:
-      - ./Matching:/app
-      - ./utils:/app/utils
-      - ./static:/app/staticfiles
     restart: always
-    env_file:
-      - .env
     depends_on:
       - redis
-
