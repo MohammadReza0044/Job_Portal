@@ -15,5 +15,5 @@ urlpatterns = [
         InternalMatchNewCvToAllJobsTrigger.as_view(),
         name="trigger_matching_new_cv_to_jobs",
     ),
-    path("internal/match/list/", InternalMatchList.as_view(), name="match_list"),
+    path("internal/matchs/", InternalMatchList.as_view(), name="match_list"),
 ]
