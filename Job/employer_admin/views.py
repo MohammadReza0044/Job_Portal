@@ -31,7 +31,7 @@ class JobList(APIView):
             resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
             return Response(resul, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(sell, request):
+    def post(self, request):
         user_id = request.user.id
 
         try:
@@ -50,8 +50,13 @@ class JobList(APIView):
                         "job_id": str(job.id),
                         "job_description": job.description,
                     }
-                    MATCHING_URL = "http://localhost:8003/api/v1/internal/trigger-matching-new-job-to-cvs/"
-                    requests.post(MATCHING_URL, headers=headers, json=payload)
+                    MATCHING_URL = (
+                        config("MATCHING_SERVICE_URL")
+                        + "/api/v1/internal/trigger-matching-new-job-to-cvs/"
+                    )
+                    requests.post(
+                        MATCHING_URL, headers=headers, json=payload, timeout=5
+                    )
                     print("message has been sent to matching service")
                 except Exception as e:
                     print(f"Failed to notify matching service: {e}")

@@ -26,15 +26,21 @@ class ApplicationList(APIView):
             resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
             return Response(resul, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(sell, request):
+    def post(self, request):
         user_id = request.user.id
         job_id = request.data.get("job_id")
 
         try:
+
             application_data = request.data.copy()
+
             application_data["user_id"] = user_id
 
-            job_check = requests.get(f"http://localhost:8000/api/job/{job_id}/")
+            JOB_SERVICE_URL = config("JOB_SERVICE_URL") + "/api/v1/internal/jobs"
+            headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
+            url = f"{JOB_SERVICE_URL}/{job_id}/"
+            job_check = requests.get(url, headers=headers, timeout=5)
+
             if job_check.status_code != 200:
                 resul = result_message(
                     "ERROR",
@@ -44,6 +50,15 @@ class ApplicationList(APIView):
                 return Response(resul, status=status.HTTP_400_BAD_REQUEST)
 
             serializer = ApplicationSerializer(data=application_data)
+
+            if Application.objects.filter(user_id=user_id, job_id=job_id).exists():
+                resul = result_message(
+                    "ERROR",
+                    status.HTTP_400_BAD_REQUEST,
+                    {"error": "You have already applied for this job"},
+                )
+                return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+
             if serializer.is_valid():
                 serializer.save()
                 resul = result_message(
@@ -74,9 +89,17 @@ class ProfileList(APIView):
             resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
             return Response(resul, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(sell, request):
+    def post(self, request):
         user_id = request.user.id
         user_name = f"{request.user.first_name} {request.user.last_name}"
+
+        if JobSeekerProfile.objects.filter(user_id=user_id).exists():
+            resul = result_message(
+                "ERROR",
+                status.HTTP_400_BAD_REQUEST,
+                {"error": "A profile already exists. Use PUT to update it."},
+            )
+            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             profile_data = request.data.copy()
@@ -106,8 +129,13 @@ class ProfileList(APIView):
                         "user_id": str(user_id),
                         "cv_text": instance.extracted_text,
                     }
-                    MATCHING_URL = "http://localhost:8004/api/internal/trigger-matching-new-cv-to-jobs/"
-                    requests.post(MATCHING_URL, headers=headers, json=payload)
+                    MATCHING_URL = (
+                        config("MATCHING_SERVICE_URL")
+                        + "/api/v1/internal/trigger-matching-new-cv-to-jobs/"
+                    )
+                    requests.post(
+                        MATCHING_URL, headers=headers, json=payload, timeout=5
+                    )
                     print("message has been sent to matching service")
                 except Exception as e:
                     print(f"Failed to notify matching service: {e}")

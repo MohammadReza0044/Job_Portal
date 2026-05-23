@@ -1,11 +1,18 @@
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import BasePermission
 
+# class IsJWTAuthenticated(BasePermission):
+#     def has_permission(self, request, view):
+#         user = request.user
+#         if not user or not isinstance(user, dict):
+#             raise AuthenticationFailed("Unauthenticated or invalid token")
+#         return True
+
 
 class IsJWTAuthenticated(BasePermission):
     def has_permission(self, request, view):
         user = request.user
-        if not user or not isinstance(user, dict):
+        if not user or not getattr(user, "is_authenticated", False):  # ✅ correct check
             raise AuthenticationFailed("Unauthenticated or invalid token")
         return True
 

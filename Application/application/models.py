@@ -24,6 +24,11 @@ class Application(models.Model):
 
     class Meta:
         db_table = "Application"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user_id", "job_id"], name="unique_application_per_job"
+            )
+        ]
 
 
 class JobSeekerProfile(models.Model):

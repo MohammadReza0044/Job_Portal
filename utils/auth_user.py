@@ -3,17 +3,19 @@ import uuid
 
 class AuthenticatedUser:
     def __init__(self, payload):
-        user_id = payload.get("id")
-        if not user_id:
-            # For tests, generate a dummy UUID instead of failing
-            user_id = str(uuid.uuid4())
+        user_id = payload.get("user_id")
 
-        self.id = uuid.UUID(str(user_id))  # always convert to string
+        if not user_id:
+            raise ValueError(
+                f"JWT payload is missing 'user_id'. Got keys: {list(payload.keys())}"
+            )
+
+        self.id = uuid.UUID(str(user_id))
         self.email = payload.get("email", "")
         self.role = payload.get("role", "")
         self.first_name = payload.get("first_name", "")
         self.last_name = payload.get("last_name", "")
-        self.payload = payload  # optionally store full JWT
+        self.payload = payload
 
     @property
     def is_authenticated(self):
