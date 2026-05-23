@@ -4,6 +4,7 @@ from pdfminer.high_level import extract_text
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListCreateAPIView
 
 from utils.internal_permission import IsInternalService
 from utils.messages import result_message
@@ -12,67 +13,57 @@ from .models import *
 from .serializers import *
 
 
-class ApplicationList(APIView):
+class ApplicationList(ListCreateAPIView):
+    serializer_class = ApplicationSerializer
+    filterset_fields = ["status", "job_id"]
+    ordering_fields = ["created_at"]
+    ordering = ["-created_at"]
 
-    def get(self, request):
-        user_id = request.user.id
+    def get_queryset(self):
+        return Application.objects.filter(user_id=self.request.user.id)
 
-        try:
-            applicatios = Application.objects.filter(user_id=user_id)
-            serializer = ApplicationSerializer(applicatios, many=True)
-            resul = result_message("OK", status.HTTP_200_OK, serializer.data)
-            return Response(resul, status=status.HTTP_200_OK)
-        except Exception as e:
-            resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
-            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
-
-    def post(self, request):
+    def create(self, request, *args, **kwargs):
         user_id = request.user.id
         job_id = request.data.get("job_id")
 
         try:
-
-            application_data = request.data.copy()
-
-            application_data["user_id"] = user_id
-
-            JOB_SERVICE_URL = config("JOB_SERVICE_URL") + "/api/v1/internal/jobs"
-            headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
-            url = f"{JOB_SERVICE_URL}/{job_id}/"
-            job_check = requests.get(url, headers=headers, timeout=5)
-
-            if job_check.status_code != 200:
-                resul = result_message(
-                    "ERROR",
-                    status.HTTP_400_BAD_REQUEST,
-                    {"error": "Invalid or non-existent job"},
-                )
-                return Response(resul, status=status.HTTP_400_BAD_REQUEST)
-
-            serializer = ApplicationSerializer(data=application_data)
-
             if Application.objects.filter(user_id=user_id, job_id=job_id).exists():
-                resul = result_message(
+                result = result_message(
                     "ERROR",
                     status.HTTP_400_BAD_REQUEST,
                     {"error": "You have already applied for this job"},
                 )
-                return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
+            url = config("JOB_SERVICE_URL") + f"/api/v1/internal/jobs/{job_id}/"
+            headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
+            job_check = requests.get(url, headers=headers, timeout=5)
+            if job_check.status_code != 200:
+                result = result_message(
+                    "ERROR",
+                    status.HTTP_400_BAD_REQUEST,
+                    {"error": "Invalid or non-existent job"},
+                )
+                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+            data = request.data.copy()
+            data["user_id"] = user_id
+            serializer = self.get_serializer(data=data)
             if serializer.is_valid():
                 serializer.save()
-                resul = result_message(
+                result = result_message(
                     "CREATED", status.HTTP_201_CREATED, serializer.data
                 )
-                return Response(resul, status=status.HTTP_201_CREATED)
-            else:
-                resul = result_message(
-                    "ERROR", status.HTTP_400_BAD_REQUEST, serializer.errors
-                )
-                return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+                return Response(result, status=status.HTTP_201_CREATED)
+
+            result = result_message(
+                "ERROR", status.HTTP_400_BAD_REQUEST, serializer.errors
+            )
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
-            resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
-            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+            result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProfileList(APIView):
