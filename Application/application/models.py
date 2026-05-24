@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from .validators import validate_pdf
 
 
 class Application(models.Model):
@@ -31,11 +32,11 @@ class Application(models.Model):
         ]
 
 
-class JobSeekerProfile(models.Model):
+class UserCV(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_id = models.UUIDField(unique=True, db_index=True)
     full_name = models.CharField(max_length=100)
-    cv_file = models.FileField(upload_to="cvs/")
+    cv_file = models.FileField(upload_to="cvs/", validators=[validate_pdf])
     extracted_text = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -44,4 +45,4 @@ class JobSeekerProfile(models.Model):
         return self.full_name
 
     class Meta:
-        db_table = "Job Seeker Profile"
+        db_table = "User CV"

@@ -66,14 +66,14 @@ class ApplicationList(ListCreateAPIView):
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProfileList(APIView):
+class CvList(APIView):
 
     def get(self, request):
         user_id = request.user.id
 
         try:
-            profile = JobSeekerProfile.objects.filter(user_id=user_id)
-            serializer = JobSeekerProfileSerializer(profile, many=True)
+            cv = UserCV.objects.get(user_id=user_id)
+            serializer = UserCVSerializer(cv)
             resul = result_message("OK", status.HTTP_200_OK, serializer.data)
             return Response(resul, status=status.HTTP_200_OK)
         except Exception as e:
@@ -84,27 +84,27 @@ class ProfileList(APIView):
         user_id = request.user.id
         user_name = f"{request.user.first_name} {request.user.last_name}"
 
-        if JobSeekerProfile.objects.filter(user_id=user_id).exists():
+        if UserCV.objects.filter(user_id=user_id).exists():
             resul = result_message(
                 "ERROR",
                 status.HTTP_400_BAD_REQUEST,
-                {"error": "A profile already exists. Use PUT to update it."},
+                {"error": "A CV already exists."},
             )
             return Response(resul, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            profile_data = request.data.copy()
-            profile_data["user_id"] = user_id
-            profile_data["full_name"] = user_name
+            cv_data = request.data.copy()
+            cv_data["user_id"] = user_id
+            cv_data["full_name"] = user_name
 
-            serializer = JobSeekerProfileSerializer(data=profile_data)
+            serializer = UserCVSerializer(data=cv_data)
             if serializer.is_valid():
                 instance = serializer.save()
 
                 # Extract text from the saved file
                 try:
                     if instance.cv_file:
-                        file_path = instance.cv_file.path  # full path to file on disk
+                        file_path = instance.cv_file.path
                         text = extract_text(file_path)
                         instance.extracted_text = text.strip()
                         instance.save(update_fields=["extracted_text"])
@@ -151,7 +151,7 @@ class InternalCVList(APIView):
     def get(self, request):
 
         try:
-            cvs = JobSeekerProfile.objects.all()
+            cvs = UserCV.objects.all()
             serializer = InternalCVListSerializer(cvs, many=True)
             return Response(serializer.data)
         except Exception as e:

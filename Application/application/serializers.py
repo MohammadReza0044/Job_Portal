@@ -10,15 +10,15 @@ class ApplicationSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class JobSeekerProfileSerializer(serializers.ModelSerializer):
+class UserCVSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = JobSeekerProfile
-        fields = "__all__"
+        model = UserCV
+        fields = ("user_id", "full_name", "cv_file")
 
 
 class InternalCVListSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = JobSeekerProfile
+        model = UserCV
         fields = ("user_id", "extracted_text")
