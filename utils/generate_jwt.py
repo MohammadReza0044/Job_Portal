@@ -8,9 +8,9 @@ ALGORITHM = "HS256"
 
 
 def generate_test_jwt(user_id=1, username="testuser", role="Employer", exp_minutes=30):
-    """Generate a JWT token for test purposes"""
+
     payload = {
-        "id": str(user_id),  # match request.user.id in your AuthenticatedUser
+        "id": str(user_id),
         "username": username,
         "role": role,  # ensure IsEmployer sees the correct role
         "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=exp_minutes),

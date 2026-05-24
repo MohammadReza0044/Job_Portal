@@ -15,7 +15,7 @@ from .serializers import *
 
 class ApplicationList(ListCreateAPIView):
     serializer_class = ApplicationSerializer
-    filterset_fields = ["status", "job_id"]
+    filterset_fields = ["status"]
     ordering_fields = ["created_at"]
     ordering = ["-created_at"]
 

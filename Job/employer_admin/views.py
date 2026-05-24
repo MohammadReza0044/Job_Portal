@@ -16,22 +16,17 @@ from job.permissions import *
 from job.serializers import *
 
 
-class JobList(APIView):
+class JobList(ListCreateAPIView):
     permission_classes = [IsEmployer]
+    serializer_class = JobSerializer
+    filterset_fields = ["status"]
+    ordering_fields = ["category_id__title", "location_id__title", "job_type"]
+    ordering = ["salary", "created_at"]
 
-    def get(self, request):
-        user_id = request.user.id
+    def get_queryset(self):
+        return Job.objects.filter(user_id=self.request.user.id)
 
-        try:
-            jobs = Job.objects.filter(employer_id=user_id)
-            serializer = JobSerializer(jobs, many=True)
-            resul = result_message("OK", status.HTTP_200_OK, serializer.data)
-            return Response(resul, status=status.HTTP_200_OK)
-        except Exception as e:
-            resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
-            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
-
-    def post(self, request):
+    def create(self, request, *args, **kwargs):
         user_id = request.user.id
 
         try:
