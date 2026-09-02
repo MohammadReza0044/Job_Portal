@@ -82,7 +82,6 @@ class CvList(APIView):
 
     def post(self, request):
         user_id = request.user.id
-        user_name = f"{request.user.first_name} {request.user.last_name}"
 
         if UserCV.objects.filter(user_id=user_id).exists():
             resul = result_message(
@@ -93,13 +92,12 @@ class CvList(APIView):
             return Response(resul, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            cv_data = request.data.copy()
-            cv_data["user_id"] = user_id
-            cv_data["full_name"] = user_name
-
-            serializer = UserCVSerializer(data=cv_data)
+            serializer = UserCVSerializer(data=request.data)
             if serializer.is_valid():
-                instance = serializer.save()
+                instance = serializer.save(
+                    user_id=request.user.id,
+                    full_name=f"{request.user.first_name} {request.user.last_name}".strip(),
+                )
 
                 # Extract text from the saved file
                 try:

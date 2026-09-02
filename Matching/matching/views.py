@@ -76,3 +76,37 @@ class InternalMatchList(APIView):
         except Exception as e:
             resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
             return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+
+
+class JobEventView(APIView):
+
+    def post(self, request):
+
+        service_token = request.headers.get("X-Service-Token")
+
+        if service_token != config("INTERNAL_SERVICE_TOKEN"):
+            return Response(
+                {"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        event = request.data.get("event")
+        job_id = request.data.get("job_id")
+        data = request.data.get("data", {})
+
+        if not event or not job_id:
+            return Response(
+                {"detail": "event and job_id are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if event == "job.deleted":
+            JobMatch.objects.filter(job_id=job_id).delete()
+
+        elif event == "job.status_changed":
+
+            job_status = data.get("status")
+
+            if job_status is False:
+                JobMatch.objects.filter(job_id=job_id).delete()
+
+        return Response({"status": "processed"}, status=status.HTTP_200_OK)

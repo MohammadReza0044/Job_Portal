@@ -15,6 +15,7 @@ class UserCVSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserCV
         fields = ("user_id", "full_name", "cv_file")
+        read_only_fields = ("user_id", "full_name")
 
 
 class InternalCVListSerializer(serializers.ModelSerializer):

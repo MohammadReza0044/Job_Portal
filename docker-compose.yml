@@ -158,6 +158,30 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+  
+  job-celery:
+    build: ./Job
+    container_name: job_celery_worker
+    command: celery -A config worker --loglevel=info -Q job_service
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./Job:/app
+      - ./utils:/app/utils
+    environment:
+      DATABASE_NAME: ${JOB_DB_NAME}
+      DATABASE_USERNAME: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_HOST: ${POSTGRES_HOST}
+      DATABASE_PORT: ${POSTGRES_PORT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - job_portal_net
 
   celery-beat:
     <<: *matching-base

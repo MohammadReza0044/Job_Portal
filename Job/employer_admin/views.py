@@ -5,6 +5,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
+from django.db import transaction
+
+from .tasks import notify_matching_service
 
 
 from job.permissions import IsEmployer
@@ -24,7 +27,7 @@ class JobList(ListCreateAPIView):
     ordering = ["salary", "created_at"]
 
     def get_queryset(self):
-        return Job.objects.filter(user_id=self.request.user.id)
+        return Job.objects.filter(employer_id=self.request.user.id)
 
     def create(self, request, *args, **kwargs):
         user_id = request.user.id
@@ -90,30 +93,93 @@ class JobDetail(APIView):
 
         try:
             job = get_object_or_404(Job, employer_id=user_id, id=job_id)
-            serializer = JobUpdateSerializer(job, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                result = result_message("OK", status.HTTP_200_OK, serializer.data)
-                return Response(result, status=status.HTTP_200_OK)
-            else:
+
+            old_status = job.status
+
+            serializer = JobUpdateSerializer(
+                job,
+                data=request.data,
+                partial=True,
+            )
+
+            if not serializer.is_valid():
                 result = result_message(
                     "ERROR", status.HTTP_400_BAD_REQUEST, serializer.errors
                 )
                 return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+            # Notify Matching service
+            with transaction.atomic():
+
+                job = serializer.save()
+                new_status = job.status
+
+                if old_status != new_status:
+
+                    def send_status_change():
+                        notify_matching_service.delay(
+                            event="job.status_changed",
+                            job_id=job.id,
+                            data={"status": new_status},
+                        )
+
+                    transaction.on_commit(send_status_change)
+
+            result = result_message("OK", status.HTTP_200_OK, serializer.data)
+
+            return Response(result, status=status.HTTP_200_OK)
+
         except Exception as e:
             result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
+
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, job_id):
         user_id = request.user.id
 
         try:
-            get_object_or_404(Job, employer_id=user_id, id=job_id).delete()
-            result = result_message("DELETED", status.HTTP_204_NO_CONTENT, "DELETED")
-            return Response(result, status=status.HTTP_200_OK)
+            job = get_object_or_404(
+                Job,
+                employer_id=user_id,
+                id=job_id,
+            )
+
+            deleted_job_id = str(job.id)
+
+            # Notify Matching service
+            with transaction.atomic():
+
+                job.delete()
+
+                transaction.on_commit(
+                    lambda: notify_matching_service.delay(
+                        event="job.deleted",
+                        job_id=deleted_job_id,
+                    )
+                )
+
+            result = result_message(
+                "DELETED",
+                status.HTTP_204_NO_CONTENT,
+                "DELETED",
+            )
+
+            return Response(
+                result,
+                status=status.HTTP_204_NO_CONTENT,
+            )
+
         except Exception as e:
-            result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            result = result_message(
+                "ERROR",
+                status.HTTP_400_BAD_REQUEST,
+                str(e),
+            )
+
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class LocationList(ListCreateAPIView):

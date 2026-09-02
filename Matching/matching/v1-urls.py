@@ -16,4 +16,9 @@ urlpatterns = [
         name="trigger_matching_new_cv_to_jobs",
     ),
     path("internal/matchs/", InternalMatchList.as_view(), name="match_list"),
+    path(
+        "internal/events/job/",
+        JobEventView.as_view(),
+        name="job-event",
+    ),
 ]
