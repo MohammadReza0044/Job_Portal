@@ -10,6 +10,7 @@ x-matching-b      ase: &matching-base
     - ./Matching:/app
     - ./utils:/app/utils
     - sentence_transformers_cache:/root/.cache/torch/sentence_transformers
+    - matching_faiss_data:/app/data
   networks:
     - job_portal_net
 
@@ -224,6 +225,8 @@ services:
     container_name: postgres
     env_file:
       - .env
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
@@ -238,3 +241,4 @@ services:
 volumes:
   sentence_transformers_cache:
   postgres_data:
+  matching_faiss_data:

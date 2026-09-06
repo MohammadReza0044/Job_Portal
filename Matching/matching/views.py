@@ -10,31 +10,30 @@ from utils.messages import result_message
 from .models import JobMatch
 from .serializers import InternalMatchingListSerializer
 
+# class InternalMatchNewJobToAllCvsTrigger(APIView):
+#     def post(self, request):
+#         token = request.headers.get("X-Service-Token")
+#         if token != config("INTERNAL_SERVICE_TOKEN"):
+#             return Response({"detail": "Unauthorized"}, status=401)
 
-class InternalMatchNewJobToAllCvsTrigger(APIView):
-    def post(self, request):
-        token = request.headers.get("X-Service-Token")
-        if token != config("INTERNAL_SERVICE_TOKEN"):
-            return Response({"detail": "Unauthorized"}, status=401)
+#         job_id = request.data.get("job_id")
+#         job_description = request.data.get("job_description")
 
-        job_id = request.data.get("job_id")
-        job_description = request.data.get("job_description")
+#         if not job_id or not job_description:
+#             result = result_message(
+#                 "ERROR", status.HTTP_400_BAD_REQUEST, {"detail": "Missing fields"}
+#             )
+#             return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
-        if not job_id or not job_description:
-            result = result_message(
-                "ERROR", status.HTTP_400_BAD_REQUEST, {"detail": "Missing fields"}
-            )
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            match_all_cvs_to_new_job.delay(job_id, job_description)
-            result = result_message(
-                "OK", status.HTTP_200_OK, {"message": "Matching task started"}
-            )
-            return Response(result, status=status.HTTP_200_OK)
-        except Exception as e:
-            result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+#         try:
+#             match_all_cvs_to_new_job.delay(job_id, job_description)
+#             result = result_message(
+#                 "OK", status.HTTP_200_OK, {"message": "Matching task started"}
+#             )
+#             return Response(result, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
+#             return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 class InternalMatchNewCvToAllJobsTrigger(APIView):
@@ -81,12 +80,12 @@ class InternalMatchList(APIView):
 class JobEventView(APIView):
 
     def post(self, request):
-
         service_token = request.headers.get("X-Service-Token")
 
         if service_token != config("INTERNAL_SERVICE_TOKEN"):
             return Response(
-                {"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED
+                {"detail": "Unauthorized"},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         event = request.data.get("event")
@@ -99,14 +98,26 @@ class JobEventView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if event == "job.deleted":
-            JobMatch.objects.filter(job_id=job_id).delete()
+        if event == "job.created":
 
-        elif event == "job.status_changed":
+            sync_job_to_faiss.delay(job_id)
+
+        elif event == "job.updated":
 
             job_status = data.get("status")
 
             if job_status is False:
                 JobMatch.objects.filter(job_id=job_id).delete()
 
-        return Response({"status": "processed"}, status=status.HTTP_200_OK)
+            sync_job_to_faiss.delay(job_id)
+
+        elif event == "job.deleted":
+
+            JobMatch.objects.filter(job_id=job_id).delete()
+
+            remove_job_from_faiss.delay(job_id)
+
+        return Response(
+            {"status": "processed"},
+            status=status.HTTP_200_OK,
+        )

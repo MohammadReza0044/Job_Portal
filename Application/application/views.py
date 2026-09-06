@@ -122,10 +122,16 @@ class CvList(APIView):
                         config("MATCHING_SERVICE_URL")
                         + "/api/v1/internal/trigger-matching-new-cv-to-jobs/"
                     )
-                    requests.post(
-                        MATCHING_URL, headers=headers, json=payload, timeout=5
+                    response = requests.post(
+                        MATCHING_URL,
+                        headers=headers,
+                        json=payload,
+                        timeout=5,
                     )
-                    print("message has been sent to matching service")
+
+                    response.raise_for_status()
+
+                    print("matching task triggered successfully")
                 except Exception as e:
                     print(f"Failed to notify matching service: {e}")
 

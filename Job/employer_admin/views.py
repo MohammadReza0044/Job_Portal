@@ -38,39 +38,50 @@ class JobList(ListCreateAPIView):
             job_data["status"] = True
 
             serializer = JobSerializer(data=job_data)
-            if serializer.is_valid():
+
+            if not serializer.is_valid():
+                result = result_message(
+                    "ERROR",
+                    status.HTTP_400_BAD_REQUEST,
+                    serializer.errors,
+                )
+                return Response(
+                    result,
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            with transaction.atomic():
                 job = serializer.save()
 
-                # ✅ Trigger matching service here
-                try:
-                    headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
-                    payload = {
-                        "job_id": str(job.id),
-                        "job_description": job.description,
-                    }
-                    MATCHING_URL = (
-                        config("MATCHING_SERVICE_URL")
-                        + "/api/v1/internal/trigger-matching-new-job-to-cvs/"
+                transaction.on_commit(
+                    lambda: notify_matching_service.delay(
+                        event="job.created",
+                        job_id=str(job.id),
                     )
-                    requests.post(
-                        MATCHING_URL, headers=headers, json=payload, timeout=5
-                    )
-                    print("message has been sent to matching service")
-                except Exception as e:
-                    print(f"Failed to notify matching service: {e}")
+                )
 
-                resul = result_message(
-                    "CREATED", status.HTTP_201_CREATED, serializer.data
-                )
-                return Response(resul, status=status.HTTP_201_CREATED)
-            else:
-                resul = result_message(
-                    "ERROR", status.HTTP_400_BAD_REQUEST, serializer.errors
-                )
-                return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+            result = result_message(
+                "CREATED",
+                status.HTTP_201_CREATED,
+                serializer.data,
+            )
+
+            return Response(
+                result,
+                status=status.HTTP_201_CREATED,
+            )
+
         except Exception as e:
-            resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
-            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+            result = result_message(
+                "ERROR",
+                status.HTTP_400_BAD_REQUEST,
+                str(e),
+            )
+
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class JobDetail(APIView):
@@ -92,9 +103,11 @@ class JobDetail(APIView):
         user_id = request.user.id
 
         try:
-            job = get_object_or_404(Job, employer_id=user_id, id=job_id)
-
-            old_status = job.status
+            job = get_object_or_404(
+                Job,
+                employer_id=user_id,
+                id=job_id,
+            )
 
             serializer = JobUpdateSerializer(
                 job,
@@ -104,35 +117,50 @@ class JobDetail(APIView):
 
             if not serializer.is_valid():
                 result = result_message(
-                    "ERROR", status.HTTP_400_BAD_REQUEST, serializer.errors
+                    "ERROR",
+                    status.HTTP_400_BAD_REQUEST,
+                    serializer.errors,
                 )
-                return Response(result, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    result,
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-            # Notify Matching service
             with transaction.atomic():
-
                 job = serializer.save()
-                new_status = job.status
 
-                if old_status != new_status:
+                transaction.on_commit(
+                    lambda: notify_matching_service.delay(
+                        event="job.updated",
+                        job_id=str(job.id),
+                        data={
+                            "status": job.status,
+                        },
+                    )
+                )
 
-                    def send_status_change():
-                        notify_matching_service.delay(
-                            event="job.status_changed",
-                            job_id=job.id,
-                            data={"status": new_status},
-                        )
+            result = result_message(
+                "OK",
+                status.HTTP_200_OK,
+                serializer.data,
+            )
 
-                    transaction.on_commit(send_status_change)
-
-            result = result_message("OK", status.HTTP_200_OK, serializer.data)
-
-            return Response(result, status=status.HTTP_200_OK)
+            return Response(
+                result,
+                status=status.HTTP_200_OK,
+            )
 
         except Exception as e:
-            result = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
+            result = result_message(
+                "ERROR",
+                status.HTTP_400_BAD_REQUEST,
+                str(e),
+            )
 
-            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def delete(self, request, job_id):
         user_id = request.user.id
@@ -146,9 +174,7 @@ class JobDetail(APIView):
 
             deleted_job_id = str(job.id)
 
-            # Notify Matching service
             with transaction.atomic():
-
                 job.delete()
 
                 transaction.on_commit(
@@ -158,16 +184,7 @@ class JobDetail(APIView):
                     )
                 )
 
-            result = result_message(
-                "DELETED",
-                status.HTTP_204_NO_CONTENT,
-                "DELETED",
-            )
-
-            return Response(
-                result,
-                status=status.HTTP_204_NO_CONTENT,
-            )
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         except Exception as e:
             result = result_message(
