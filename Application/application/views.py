@@ -73,80 +73,196 @@ class CvList(APIView):
 
         try:
             cv = UserCV.objects.get(user_id=user_id)
+
             serializer = UserCVSerializer(cv)
-            resul = result_message("OK", status.HTTP_200_OK, serializer.data)
-            return Response(resul, status=status.HTTP_200_OK)
+
+            result = result_message(
+                "OK",
+                status.HTTP_200_OK,
+                serializer.data,
+            )
+
+            return Response(
+                result,
+                status=status.HTTP_200_OK,
+            )
+
         except Exception as e:
-            resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
-            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+            result = result_message(
+                "ERROR",
+                status.HTTP_400_BAD_REQUEST,
+                str(e),
+            )
+
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def post(self, request):
         user_id = request.user.id
 
         if UserCV.objects.filter(user_id=user_id).exists():
-            resul = result_message(
+            result = result_message(
                 "ERROR",
                 status.HTTP_400_BAD_REQUEST,
                 {"error": "A CV already exists."},
             )
-            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             serializer = UserCVSerializer(data=request.data)
-            if serializer.is_valid():
-                instance = serializer.save(
-                    user_id=request.user.id,
-                    full_name=f"{request.user.first_name} {request.user.last_name}".strip(),
+
+            if not serializer.is_valid():
+                result = result_message(
+                    "ERROR",
+                    status.HTTP_400_BAD_REQUEST,
+                    serializer.errors,
                 )
 
-                # Extract text from the saved file
-                try:
-                    if instance.cv_file:
-                        file_path = instance.cv_file.path
-                        text = extract_text(file_path)
-                        instance.extracted_text = text.strip()
-                        instance.save(update_fields=["extracted_text"])
-                except Exception as e:
-                    print(f"Error extracting text from CV: {e}")
-                    instance.extracted_text = ""
+                return Response(
+                    result,
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            instance = serializer.save(
+                user_id=user_id,
+                full_name=(
+                    f"{request.user.first_name} " f"{request.user.last_name}"
+                ).strip(),
+            )
+
+            # Extract text from the saved CV
+            try:
+                if instance.cv_file:
+                    file_path = instance.cv_file.path
+
+                    text = extract_text(file_path)
+
+                    instance.extracted_text = text.strip()
+
                     instance.save(update_fields=["extracted_text"])
 
-                # ✅ Trigger matching service here
-                try:
-                    headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
-                    payload = {
-                        "user_id": str(user_id),
-                        "cv_text": instance.extracted_text,
-                    }
-                    MATCHING_URL = (
-                        config("MATCHING_SERVICE_URL")
-                        + "/api/v1/internal/trigger-matching-new-cv-to-jobs/"
-                    )
-                    response = requests.post(
-                        MATCHING_URL,
-                        headers=headers,
-                        json=payload,
-                        timeout=5,
-                    )
+            except Exception as e:
+                print(f"Error extracting text from CV: {e}")
 
-                    response.raise_for_status()
+                instance.extracted_text = ""
 
-                    print("matching task triggered successfully")
-                except Exception as e:
-                    print(f"Failed to notify matching service: {e}")
+                instance.save(update_fields=["extracted_text"])
 
-                resul = result_message(
-                    "CREATED", status.HTTP_201_CREATED, serializer.data
+            # Trigger Matching Service
+            try:
+                headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
+
+                payload = {
+                    "user_id": str(user_id),
+                    "cv_text": instance.extracted_text,
+                }
+
+                matching_url = (
+                    config("MATCHING_SERVICE_URL")
+                    + "/api/v1/internal/"
+                    + "trigger-matching-new-cv-to-jobs/"
                 )
-                return Response(resul, status=status.HTTP_201_CREATED)
-            else:
-                resul = result_message(
-                    "ERROR", status.HTTP_400_BAD_REQUEST, serializer.errors
+
+                response = requests.post(
+                    matching_url,
+                    headers=headers,
+                    json=payload,
+                    timeout=5,
                 )
-                return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+
+                response.raise_for_status()
+
+                print("CV indexing and matching tasks " "triggered successfully")
+
+            except Exception as e:
+                print(f"Failed to notify matching service: {e}")
+
+            result = result_message(
+                "CREATED",
+                status.HTTP_201_CREATED,
+                serializer.data,
+            )
+
+            return Response(
+                result,
+                status=status.HTTP_201_CREATED,
+            )
+
         except Exception as e:
-            resul = result_message("ERROR", status.HTTP_400_BAD_REQUEST, str(e))
-            return Response(resul, status=status.HTTP_400_BAD_REQUEST)
+            result = result_message(
+                "ERROR",
+                status.HTTP_400_BAD_REQUEST,
+                str(e),
+            )
+
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def delete(self, request):
+        user_id = request.user.id
+
+        try:
+            cv = UserCV.objects.get(user_id=user_id)
+
+            cv.delete()
+
+            try:
+                headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
+
+                payload = {
+                    "user_id": str(user_id),
+                }
+
+                MATCHING_URL = (
+                    config("MATCHING_SERVICE_URL")
+                    + "/api/v1/internal/trigger-delete-cv/"
+                )
+
+                response = requests.post(
+                    MATCHING_URL,
+                    headers=headers,
+                    json=payload,
+                    timeout=5,
+                )
+
+                response.raise_for_status()
+
+            except Exception as e:
+                print(f"Failed to notify matching service about CV deletion: {e}")
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except UserCV.DoesNotExist:
+            result = result_message(
+                "ERROR",
+                status.HTTP_404_NOT_FOUND,
+                {"error": "CV not found."},
+            )
+
+            return Response(
+                result,
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        except Exception as e:
+            result = result_message(
+                "ERROR",
+                status.HTTP_400_BAD_REQUEST,
+                str(e),
+            )
+
+            return Response(
+                result,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class InternalCVList(APIView):

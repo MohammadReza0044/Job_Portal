@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
 from django.db import transaction
 
-from .tasks import notify_matching_service
+from .tasks import notify_matching_service, trigger_matching_new_job_to_cvs
 
 
 from job.permissions import IsEmployer
@@ -57,6 +57,12 @@ class JobList(ListCreateAPIView):
                     lambda: notify_matching_service.delay(
                         event="job.created",
                         job_id=str(job.id),
+                    )
+                )
+                transaction.on_commit(
+                    lambda: trigger_matching_new_job_to_cvs.delay(
+                        job_id=str(job.id),
+                        job_description=job.description,
                     )
                 )
 

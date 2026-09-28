@@ -38,3 +38,30 @@ class IndexedJob(models.Model):
 
     class Meta:
         db_table = "Indexed Job"
+
+
+class IndexedCV(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    user_id = models.UUIDField(unique=True)
+    extracted_text = models.TextField()
+
+    # Integer ID used inside the CV FAISS index
+    faiss_index_id = models.BigIntegerField(
+        unique=True,
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.user_id)
+
+    class Meta:
+        db_table = "Indexed CV"

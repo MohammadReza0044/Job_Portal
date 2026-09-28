@@ -4,8 +4,13 @@ from celery import shared_task
 from decouple import config
 from sentence_transformers import SentenceTransformer
 
-from .models import JobMatch, IndexedJob
+from .models import *
 from matching.services.faiss_manager import add_job, remove_job, search
+from matching.services.cv_faiss_manager import (
+    add_cv,
+    remove_cv,
+    search_cvs,
+)
 
 # Load embedding model once
 model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -15,30 +20,137 @@ APPLICATION_SERVICE_URL = config("APPLICATION_SERVICE_URL") + "/api/v1/internal/
 headers = {"X-Service-Token": config("INTERNAL_SERVICE_TOKEN")}
 
 
-# @shared_task
-# def match_all_cvs_to_new_job(job_id, job_description):
+@shared_task
+def index_cv(user_id, cv_text):
+    if not cv_text:
+        return
 
-#     job_vec = model.encode(job_description)
+    print(f"[index_cv] Starting CV indexing for user: {user_id}")
 
-#     # Fetch all CVs from application service
-#     response = requests.get(APPLICATION_SERVICE_URL, headers=headers)
-#     if response.status_code != 200:
-#         raise Exception("Failed to fetch CVs from Application Service")
-#     cvs = response.json()
+    indexed_cv, created = IndexedCV.objects.get_or_create(
+        user_id=user_id,
+        defaults={
+            "extracted_text": cv_text,
+        },
+    )
 
-#     results = []
+    print(
+        f"[index_cv] IndexedCV {'created' if created else 'found'}: " f"{indexed_cv.id}"
+    )
 
-#     for cv in cvs:
-#         cv_text = cv["extracted_text"]
+    # Keep the stored text up to date
+    indexed_cv.extracted_text = cv_text
 
-#         cv_vec = model.encode(cv_text)
-#         score = cosine_similarity(job_vec, cv_vec)
-#         results.append((cv["user_id"], score))
+    # Assign a unique FAISS ID if this CV doesn't have one
+    if indexed_cv.faiss_index_id is None:
+        max_id = (
+            IndexedCV.objects.exclude(faiss_index_id__isnull=True)
+            .order_by("-faiss_index_id")
+            .values_list("faiss_index_id", flat=True)
+            .first()
+        )
 
-#     # Store top 5 matches
-#     top_matches = sorted(results, key=lambda x: x[1], reverse=True)[:5]
-#     for user_id, score in top_matches:
-#         JobMatch.objects.create(user_id=user_id, job_id=job_id, score=score)
+        indexed_cv.faiss_index_id = (max_id or 0) + 1
+
+    indexed_cv.save(
+        update_fields=[
+            "extracted_text",
+            "faiss_index_id",
+            "updated_at",
+        ]
+    )
+
+    print(
+        f"[index_cv] IndexedCV saved. "
+        f"user_id={user_id}, "
+        f"faiss_index_id={indexed_cv.faiss_index_id}"
+    )
+
+    # Add/update the vector in FAISS
+    add_cv(
+        cv_id=indexed_cv.faiss_index_id,
+        cv_text=cv_text,
+    )
+
+    print(
+        f"[index_cv] CV successfully added to FAISS. "
+        f"faiss_index_id={indexed_cv.faiss_index_id}"
+    )
+
+
+@shared_task
+def remove_cv_from_faiss(user_id):
+    indexed_cv = IndexedCV.objects.filter(user_id=user_id).first()
+
+    # Delete any existing matches for this user
+    JobMatch.objects.filter(user_id=user_id).delete()
+
+    if not indexed_cv:
+        return
+
+    # Remove CV vector from FAISS
+    if indexed_cv.faiss_index_id is not None:
+        remove_cv(indexed_cv.faiss_index_id)
+
+    # Remove the IndexedCV database record
+    indexed_cv.delete()
+
+
+@shared_task
+def match_new_job_to_all_cvs(job_id, job_description):
+
+    if not job_description:
+        return
+
+    # Encode only the new job
+    job_vec = model.encode(
+        job_description,
+        normalize_embeddings=True,
+    )
+
+    job_vec = np.asarray(
+        job_vec,
+        dtype="float32",
+    ).reshape(1, -1)
+
+    # Search the precomputed CV vectors
+    scores, faiss_ids = search_cvs(
+        job_vec,
+        top_k=50,
+    )
+
+    candidates = []
+
+    for score, faiss_id in zip(scores, faiss_ids):
+        if faiss_id == -1:
+            continue
+
+        if score < 0.43:
+            continue
+
+        candidates.append((int(faiss_id), float(score)))
+
+    # Keep the top 5
+    candidates = candidates[:5]
+
+    # Resolve FAISS IDs to user IDs in one DB query
+    indexed_cvs = IndexedCV.objects.filter(
+        faiss_index_id__in=[faiss_id for faiss_id, _ in candidates]
+    )
+
+    user_by_faiss_id = {cv.faiss_index_id: cv.user_id for cv in indexed_cvs}
+
+    for faiss_id, score in candidates:
+        user_id = user_by_faiss_id.get(faiss_id)
+
+        if user_id is None:
+            continue
+
+        JobMatch.objects.update_or_create(
+            user_id=user_id,
+            job_id=job_id,
+            defaults={"score": score},
+        )
 
 
 @shared_task
