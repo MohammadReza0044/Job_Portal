@@ -132,19 +132,28 @@ class JobDetail(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            old_status = job.status
+
             with transaction.atomic():
                 job = serializer.save()
 
-                transaction.on_commit(
-                    lambda: notify_matching_service.delay(
-                        event="job.updated",
-                        job_id=str(job.id),
-                        data={
-                            "status": job.status,
-                        },
+                if old_status != job.status:
+                    transaction.on_commit(
+                        lambda: notify_matching_service.delay(
+                            event="job.status_changed",
+                            job_id=str(job.id),
+                            data={
+                                "status": job.status,
+                            },
+                        )
                     )
-                )
-
+                else:
+                    transaction.on_commit(
+                        lambda: notify_matching_service.delay(
+                            event="job.updated",
+                            job_id=str(job.id),
+                        )
+                    )
             result = result_message(
                 "OK",
                 status.HTTP_200_OK,

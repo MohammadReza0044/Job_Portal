@@ -2,7 +2,7 @@ networks:
   job_portal_net:
     driver: bridge
 
-x-matching-b      ase: &matching-base
+x-matching-base: &matching-base
   build: ./Matching
   env_file:
     - .env
@@ -10,7 +10,6 @@ x-matching-b      ase: &matching-base
     - ./Matching:/app
     - ./utils:/app/utils
     - sentence_transformers_cache:/root/.cache/torch/sentence_transformers
-    - matching_faiss_data:/app/data
   networks:
     - job_portal_net
 
@@ -109,7 +108,7 @@ services:
 
   matching-service:
     <<: *matching-base
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8003"
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py setup_vector_search && python manage.py runserver 0.0.0.0:8003"
     restart: always
     environment:
       DATABASE_NAME: ${MATCHING_DB_NAME}
@@ -117,11 +116,17 @@ services:
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
       DATABASE_HOST: ${POSTGRES_HOST}
       DATABASE_PORT: ${POSTGRES_PORT}
+      MONGODB_URI: ${MONGODB_URI}
+      MONGODB_DB_NAME: ${MONGODB_DB_NAME}
+      MONGODB_JOB_COLLECTION: ${MONGODB_JOB_COLLECTION}
+      MONGODB_CV_COLLECTION: ${MONGODB_CV_COLLECTION}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy  
     expose:
       - "8003"
     healthcheck:
@@ -181,6 +186,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
     networks:
       - job_portal_net
 
@@ -199,6 +206,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
   
   nginx:
@@ -237,8 +246,33 @@ services:
       retries: 5
     networks:
       - job_portal_net
+  
+  mongodb:
+    image: mongodb/mongodb-atlas-local:preview
+    container_name: mongodb
+    hostname: mongodb
+    ports:
+    - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - mongodb_mongot:/data/mongot
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval \"db.adminCommand('ping').ok\""
+        ]
+      interval: 90s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - job_portal_net
 
 volumes:
   sentence_transformers_cache:
   postgres_data:
-  matching_faiss_data:
+  mongodb_data:
+  mongodb_config:
+  mongodb_mongot:

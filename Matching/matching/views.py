@@ -9,6 +9,7 @@ from utils.messages import result_message
 
 from .models import JobMatch
 from .serializers import InternalMatchingListSerializer
+from matching.services.mongodb_vector_store import update_job_status
 
 
 class InternalMatchNewJobToAllCvsTrigger(APIView):
@@ -90,7 +91,7 @@ class InternalDeleteCvTrigger(APIView):
             )
 
         try:
-            remove_cv_from_faiss.delay(user_id)
+            remove_cv_vector.delay(user_id)
 
             result = result_message(
                 "OK",
@@ -199,25 +200,39 @@ class JobEventView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if event == "job.created":
+        if event in ["job.created", "job.updated"]:
 
-            sync_job_to_faiss.delay(job_id)
+            sync_job_vector.delay(job_id)
 
-        elif event == "job.updated":
+        elif event == "job.status_changed":
 
-            job_status = data.get("status")
+            new_status = data.get("status")
 
-            if job_status is False:
-                JobMatch.objects.filter(job_id=job_id).delete()
+            print(
+                f"STATUS EVENT: "
+                f"job_id={job_id}, "
+                f"new_status={new_status!r}, "
+                f"type={type(new_status)}"
+            )
 
-            sync_job_to_faiss.delay(job_id)
+            update_job_status(
+                job_id=job_id,
+                is_active=new_status,
+            )
+
+            if new_status is False:
+                deleted_count, _ = JobMatch.objects.filter(job_id=job_id).delete()
+
+                print(
+                    f"DEACTIVATED JOB {job_id}: "
+                    f"deleted {deleted_count} JobMatch rows"
+                )
 
         elif event == "job.deleted":
 
             JobMatch.objects.filter(job_id=job_id).delete()
 
-            remove_job_from_faiss.delay(job_id)
-
+            remove_job_vector.delay(job_id)
         return Response(
             {"status": "processed"},
             status=status.HTTP_200_OK,
